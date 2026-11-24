@@ -148,7 +148,6 @@ code{font:400 .88em/1.4 var(--mono);background:var(--fill);padding:1px 6px;borde
 .stat .cta{margin-left:auto;flex:none;display:inline-flex;align-items:center;justify-content:center;height:44px;padding:0 22px;border-radius:999px;background:var(--accent);color:#fff;font:400 17px/1 var(--text)}
 .stat .cta:hover{background:#0077ed;text-decoration:none}
 .stat p{flex:1 1 300px}
-.snap{margin:14px 0 0;font-size:13px;color:var(--ink2);text-align:center}
 @media (max-width:519px){.stat{border-radius:22px;padding:16px}.stat .cta{margin-left:0;width:100%}}
 @media (min-width:735px){
   .hero{padding-top:104px}
