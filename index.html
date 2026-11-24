@@ -1,0 +1,457 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>LIBERO-Phys</title>
+<link rel="icon" href="data:,">
+<!-- Not public yet: remove the next line when the site goes live. -->
+<meta name="robots" content="noindex, nofollow">
+<meta name="description" content="LIBERO-Phys changes one physical parameter of a LIBERO simulation scene at a time (mass, friction, center of mass, joint damping, joint dry friction) and measures how robot policies respond.">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="LIBERO-Phys">
+<meta property="og:title" content="LIBERO-Phys">
+<meta property="og:description" content="LIBERO-Phys changes one physical parameter of a LIBERO simulation scene at a time and measures how robot policies respond.">
+<link rel="stylesheet" href="assets/css/site.css">
+<!-- inline, so the reveal styles (.js .rv) apply from the first paint -->
+<script>document.documentElement.classList.add("js")</script>
+<script src="data/results.js" defer></script>
+<script src="assets/js/site.js" defer onerror="document.documentElement.classList.remove('js')"></script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+
+<nav class="nav" aria-label="LIBERO-Phys">
+  <a class="nav-title" href="#top">LIBERO-Phys</a>
+  <div class="explore">
+    <button class="pill out" id="exploreBtn" type="button" aria-expanded="false" aria-controls="exploreMenu">Sections</button>
+    <div class="explore-menu" id="exploreMenu" hidden>
+      <a href="#highlights">Highlights</a>
+      <a href="#explore">One parameter at a time</a>
+      <a href="#interactions">Two parameters together</a>
+      <a href="#exec">Execution settings</a>
+      <a href="#robust">Two SmolVLA checkpoints</a>
+      <a href="#design">Benchmark design</a>
+      <a href="#compare">Related benchmarks</a>
+      <a href="#faq">Questions</a>
+      <a href="#cite">Paper and citation</a>
+    </div>
+  </div>
+  <a class="pill out hide-sm" href="#design">Design</a>
+  <a class="pill solid" href="#explore" aria-label="Single-factor results"><span class="wide">Single-factor results</span><span class="tight">Results</span></a>
+</nav>
+
+<main id="main">
+
+<!-- HERO -->
+<section class="hero" id="top">
+  <div class="wrap">
+    <p class="eyebrow rv">LIBERO-Phys</p>
+    <h1 class="hx rv">Same scene. <br>Different physics.</h1>
+    <p class="hero-sub rv">LIBERO-Phys tests how robot policies handle changes in mass, friction, and joint resistance in the LIBERO simulation benchmark. Here, SmolVLA starts from the same state in both runs. The drawer opens under LIBERO’s default physics and stays shut when its slide requires 50 N to overcome dry friction.</p>
+  </div>
+  <div class="wrap-mid hero-stage">
+    <div class="pair rv" data-pair data-max="8">
+      <figure data-clip="drawer_stock_n10_ep6">
+        <div class="vbox"><video muted playsinline preload="none" disablepictureinpicture aria-label="A robot arm presses its fingertips on the handle of the middle drawer of a cabinet and drags the drawer open."></video></div>
+        <figcaption class="stack"><b>LIBERO’s default physics</b><span class="badge"></span><span class="what">The arm presses on the handle of the middle drawer and drags it open.</span></figcaption>
+      </figure>
+      <figure data-clip="drawer_frictionloss50_n10_ep6">
+        <div class="vbox"><video muted playsinline preload="none" disablepictureinpicture aria-label="The same scene and the same start, with 50 newtons of dry friction in the drawer slide: the arm presses on the handle and pulls, and the drawer stays shut."></video><button class="rbtn vctl" id="heroPlay" type="button" aria-label="Pause the videos"><svg viewBox="0 0 18 18" aria-hidden="true"><path d="M4 2.5h3.4v13H4zM10.6 2.5H14v13h-3.4z" fill="currentColor"/></svg></button></div>
+        <figcaption class="stack"><b>50 N of dry friction in the drawer slide</b><span class="badge"></span><span class="what">The arm pulls at the same handle. The middle drawer stays shut.</span></figcaption>
+      </figure>
+    </div>
+    <p class="pnote rv" data-pair-note>Same SmolVLA checkpoint, same initial state. <span data-excerpt>Excerpt, played at 2×.</span> <a href="#xp" data-goto="xp:drawer:frictionloss:frictionloss|50">Watch both rollouts in full</a></p>
+    <div class="stat rv">
+      <p><span data-fact="n_libero_tasks">7</span> LIBERO tasks · <span data-fact="n_panels">8</span> perturbation panels · <span data-fact="n_policies">4</span> model checkpoints.<span class="sub">Up to 50 paired initial states per condition: same start, same noise seed, different physics.</span></p>
+      <a class="cta" href="#explore">Explore single-factor results</a>
+    </div>
+    <p class="snap rv">Preview. Results snapshot: all runs finished by <span data-resdate>2026-11-23</span>.</p>
+  </div>
+</section>
+
+<!-- HIGHLIGHTS -->
+<section class="sec band clip-x" id="highlights" aria-roledescription="carousel" aria-label="Highlights">
+  <div class="wrap headrow">
+    <h2 class="h2 rv">What we found.</h2>
+  </div>
+  <div class="track hl-track" id="hlTrack">
+    <article class="hcard" aria-roledescription="slide" aria-label="1 of 4">
+      <h3><a href="#xp" data-goto="xp:knob:damping:damping|100">100× the damping on a stove knob. <span>It still turns on, in about twice the steps.</span></a></h3>
+      <div class="pair" data-pair data-max="9">
+        <figure data-clip="knob_stock_n10_ep1">
+          <div class="vbox"><video muted playsinline preload="none" disablepictureinpicture aria-label="The robot turns the stove knob under default physics and the burner lights."></video></div>
+          <figcaption><b>Knob, default physics</b><span class="badge"></span></figcaption>
+        </figure>
+        <figure data-clip="knob_damping100_n10_ep1">
+          <div class="vbox"><video muted playsinline preload="none" disablepictureinpicture aria-label="The same knob with 100 times the default damping turns slowly; the burner lights later."></video></div>
+          <figcaption><b>Knob, 100× hinge damping</b><span class="badge"></span></figcaption>
+        </figure>
+      </div>
+      <p class="pnote" data-pair-note>This example, one initial state: <span data-fact="knob_clip_steps_stock">76</span> → <span data-fact="knob_clip_steps_d100">149</span> steps. Median over SmolVLA’s successful trials: <span data-fact="knob_steps_stock">76</span> → <span data-fact="knob_steps_d100">147</span> steps. <span data-excerpt>Played at 2×.</span> <a href="#xp" data-goto="xp:knob:damping:damping|100">See the knob curve</a></p>
+    </article>
+    <article class="hcard" aria-roledescription="slide" aria-label="2 of 4">
+      <h3><a href="#xp" data-goto="xp:plate:friction:friction|0.105263">Too slippery, the plate slides past the target area. <span>Too sticky, it stalls short of it.</span></a></h3>
+      <div class="pair" data-pair data-max="10">
+        <figure data-clip="plate_mu0.1_n10_ep44">
+          <div class="vbox"><video muted playsinline preload="none" disablepictureinpicture aria-label="The robot pushes a plate with 0.1 times the default friction. The plate slides past the blue target area in front of the stove."></video></div>
+          <figcaption><b>Plate, 0.1× friction</b><span class="badge"></span></figcaption>
+        </figure>
+        <figure data-clip="plate_mu1.5_n10_ep44">
+          <div class="vbox"><video muted playsinline preload="none" disablepictureinpicture aria-label="The robot pushes a plate with 1.6 times the default friction. The plate barely moves and stays far from the blue target area."></video></div>
+          <figcaption><b>Plate, 1.6× friction</b><span class="badge"></span></figcaption>
+        </figure>
+      </div>
+      <p class="pnote" data-pair-note>The blue square is the target area in front of the stove: the plate’s center has to be inside it. <span data-excerpt>Played at 2×.</span> <a href="#xp" data-goto="xp:plate:friction:friction|0.105263">See the plate curve</a></p>
+    </article>
+    <article class="hcard" aria-roledescription="slide" aria-label="3 of 4">
+      <h3><a href="#gx" data-goto="gx:bowl:32|0.3">A bowl 32× heavier is lifted. <span>Heavier and slipperier, it slips out of the gripper.</span></a></h3>
+      <div class="pair" data-pair data-max="9">
+        <figure data-clip="bowl_m32_mustock_n10_ep4">
+          <div class="vbox"><video muted playsinline preload="none" disablepictureinpicture aria-label="The robot picks up the target bowl, which is 32 times heavier than default, from the blue disc and places it on the plate."></video></div>
+          <figcaption><b>Bowl, 32× mass</b><span class="badge"></span></figcaption>
+        </figure>
+        <figure data-clip="bowl_m32_mu0.285_n10_ep4">
+          <div class="vbox"><video muted playsinline preload="none" disablepictureinpicture aria-label="The same heavy bowl with 0.3 times the surface friction is lifted a few centimeters and slips out of the gripper; the robot then turns to the other black bowl."></video></div>
+          <figcaption><b>Bowl, 32× mass and 0.3× surface friction</b><span class="badge"></span></figcaption>
+        </figure>
+      </div>
+      <p class="pnote" data-pair-note>The blue disc marks where the target bowl starts. The second black bowl is not part of the task. <span data-excerpt>Played at 2×.</span> <a href="#gx" data-goto="gx:bowl:32|0.3">See all bowl conditions</a></p>
+    </article>
+    <article class="hcard" aria-roledescription="slide" aria-label="4 of 4">
+      <h3><a href="#ex" data-goto="ex:drawer">Replanning twice as often leaves the sticky drawer shut.</a></h3>
+      <div class="pair" data-pair data-max="10">
+        <figure data-clip="drawer_frictionloss40_n10_ep6">
+          <div class="vbox"><video muted playsinline preload="none" disablepictureinpicture aria-label="Drawer with 40 newtons of dry friction, policy replanning every 10 steps: the drawer opens."></video></div>
+          <figcaption><b>Drawer at 40 N, replanning every 10 steps</b><span class="badge"></span></figcaption>
+        </figure>
+        <figure data-clip="drawer_frictionloss40_n5_ep6">
+          <div class="vbox"><video muted playsinline preload="none" disablepictureinpicture aria-label="The same drawer and initial state, policy replanning every 5 steps: the drawer never moves."></video></div>
+          <figcaption><b>Same drawer, replanning every 5 steps</b><span class="badge"></span></figcaption>
+        </figure>
+      </div>
+      <p class="pnote" data-pair-note>Same SmolVLA checkpoint and initial state; only the replanning interval differs. <span data-excerpt>Played at 2×.</span> <a href="#ex" data-goto="ex:drawer">Compare the drawer and the plate in Execution settings</a></p>
+    </article>
+  </div>
+  <div class="pager-row">
+    <div class="pager" id="hlPager" role="group" aria-label="Choose a highlight"></div>
+    <button class="rbtn" id="hlPlay" type="button" aria-label="Pause highlights"><svg viewBox="0 0 18 18" aria-hidden="true"><path d="M4 2.5h3.4v13H4zM10.6 2.5H14v13h-3.4z" fill="currentColor"/></svg></button>
+  </div>
+</section>
+
+<!-- ONE PARAMETER AT A TIME -->
+<section class="sec" id="explore">
+  <div class="wrap-copy story-head">
+    <p class="eyebrow rv">One parameter at a time</p>
+    <h2 class="hx md rv">How success changes with one physical parameter</h2>
+    <p class="lede rv">Each curve changes one parameter of one object and leaves everything else at LIBERO’s default. <b>The response depends on how the task makes contact:</b> a knob only gets slower, a drawer fails abruptly, a plate fails on both sides.</p>
+  </div>
+  <div class="wrap-mid">
+    <dl class="readme rv" aria-label="How to read the results">
+      <div><dt>Default physics</dt><dd>LIBERO’s own parameter values. Every axis marks them as “default”, and every perturbed level is compared with them.</dd></div>
+      <div><dt>Trials</dt><dd>Each condition uses up to 50 of LIBERO’s predefined initial states, with the same policy noise seed per state. Some levels have 10 or 20; the charts give the count.</dd></div>
+      <div><dt>Step limits</dt><dd>Control runs at 20 Hz: 300 steps are 15 s of simulated time, 600 steps are 30 s. A run made to 600 steps also gives the 300-step result, from the same trials.<sup class="fn"><a href="#fn1" aria-label="Footnote 1">1</a></sup></dd></div>
+      <div><dt>Videos</dt><dd>One SmolVLA rollout per level, played at 2× real time. A video is a single trial; the rates come from all trials.<sup class="fn"><a href="#fn5" aria-label="Footnote 5">5</a></sup></dd></div>
+    </dl>
+  </div>
+  <div class="wrap xp rv" id="xp">
+    <p class="xp-how">Choose a task and a physical parameter, then select a tested level. The chart shows success across trials. The video shows one SmolVLA rollout at that level.</p>
+    <div class="xp-tasks scrollx"><div class="seg lg" id="xpTasks" role="group" aria-label="Task"></div></div>
+    <div class="xp-body">
+      <figure class="xp-chart">
+        <div class="xp-head">
+          <div><p class="sc-h" id="xpTitle">Success against the level of one parameter</p><div class="sc-sub" id="xpSub"></div></div>
+          <div class="segs" id="xpCtl"></div>
+        </div>
+        <p class="xp-flag" id="xpFlag" role="status" hidden></p>
+        <div class="cx scrub" id="xpChart" tabindex="0" role="slider" aria-label="Tested level" aria-describedby="xpDesc"></div>
+        <ul class="lg" id="xpLegend" aria-label="Success of each checkpoint at the selected level"></ul>
+        <p class="sr" id="xpDesc">Line chart of success rate against the level of one physical parameter, one line per checkpoint. Left and right arrow keys step through the tested levels; the video beside the chart shows one recorded rollout at the selected level.</p>
+        <figcaption class="cap">Filled markers: 50 trials. Hollow markers: 10 or 20 trials. Under the chart, each checkpoint’s successes, trials and Wilson 95% interval at the selected level, and how far its run went. Lines connect tested levels only; nothing was measured in between. Multiples are relative to LIBERO’s default; dry friction is in physical units.<sup class="fn"><a href="#fn2" aria-label="Footnote 2">2</a></sup> <span class="hint">Hover to read a level. Click it, or a frame on the right, to play that rollout. With the chart focused, the arrow keys step through the levels.</span></figcaption>
+        <noscript><p class="cap">The charts on this page need JavaScript.</p></noscript>
+      </figure>
+      <div class="cplayer" id="xpClip"></div>
+    </div>
+  </div>
+  <div class="wrap-mid sum rv">
+    <div class="sum-row">
+      <p class="sum-k">Turn a knob<span>hinge damping, 100×</span></p>
+      <p class="sum-v"><span data-fact="knob_steps_stock">76</span> → <span data-fact="knob_steps_d100">147</span> steps</p>
+      <p class="sum-p"><b>Only slower.</b> At 100× damping all four checkpoints still succeed in at least <span data-fact="knob_d100_min">88</span>% of 50 trials within 300 steps. SmolVLA’s median successful trial takes <span data-fact="knob_steps_d100">147</span> steps instead of <span data-fact="knob_steps_stock">76</span>. At 1000× no checkpoint finishes within 600 steps. <a href="#xp" data-goto="xp:knob:damping:damping|100">Show</a></p>
+    </div>
+    <div class="sum-row">
+      <p class="sum-k">Open a drawer<span>dry friction, 36 N → 40 N</span></p>
+      <p class="sum-v"><span data-fact="drawer_f36_smolvla_shared">19</span>/<span data-fact="drawer_shared_n">20</span> → <span data-fact="drawer_f40_smolvla_shared">11</span>/<span data-fact="drawer_shared_n">20</span></p>
+      <p class="sum-p"><b>An abrupt drop near the policies’ own pull.</b> On the same <span data-fact="drawer_shared_n">20</span> initial states, SmolVLA opens the drawer from <span data-fact="drawer_f36_smolvla_shared">19</span> at 36 N of dry friction (<span data-fact="drawer_f36_share">65</span>% of the 55 N pull reference) and from <span data-fact="drawer_f40_smolvla_shared">11</span> at 40 N (<span data-fact="drawer_f40_share">73</span>%). Over all 50 states at 40 N: SmolVLA <span data-fact="drawer_f40_smolvla_kn">30/50</span>, π0.5 <span data-fact="drawer_f40_pi05_kn">14/50</span>, Fast-WAM <span data-fact="drawer_f40_fastwam_kn">15/50</span>. In the contact logs SmolVLA and π0.5 sustain about 42 N along the slide, about three quarters of the reference.<sup class="fn"><a href="#fn3" aria-label="Footnote 3">3</a></sup> <a href="#xp" data-goto="xp:drawer:frictionloss:frictionloss|40">Show</a></p>
+    </div>
+    <div class="sum-row">
+      <p class="sum-k">Close a door<span>dry friction, 4 to 12 N·m</span></p>
+      <p class="sum-v trio"><span><b><span data-fact="door_stock_smolvla">80</span>%</b><i>default</i></span><span><b><span data-fact="door_f4_smolvla">58</span>%</b><i>4 N·m</i></span><span><b><span data-fact="door_f8_smolvla">16</span>%</b><i>8 N·m</i></span><span><b><span data-fact="door_f12_smolvla">0</span>%</b><i>12 N·m</i></span></p>
+      <p class="sum-p"><b>A slope, not a cliff.</b> The kind of perturbation that produces an abrupt drop on the drawer wears success down gradually on the microwave door. SmolVLA within 600 steps, 50 trials per level; π0.5 goes <span data-fact="door_stock_pi05">96</span>, <span data-fact="door_f4_pi05">96</span>, <span data-fact="door_f8_pi05">46</span> and <span data-fact="door_f12_pi05">4</span>%. Here the policies push harder as the friction grows, and most failed trials leave the door slightly ajar.<sup class="fn"><a href="#fn9" aria-label="Footnote 9">9</a></sup> <a href="#xp" data-goto="xp:door:frictionloss:frictionloss|8">Show</a></p>
+    </div>
+    <div class="sum-row">
+      <p class="sum-k">Push a plate<span>sliding friction</span></p>
+      <p class="sum-v trio"><span><b><span data-fact="plate_01_smolvla">60</span>%</b><i>at 0.1×</i></span><span><b><span data-fact="plate_stock_smolvla">92</span>%</b><i>at default</i></span><span><b><span data-fact="plate_16_smolvla">0</span>%</b><i>at 1.6×</i></span></p>
+      <p class="sum-p"><b>Failure on both sides.</b> SmolVLA within 300 steps, 50 trials per level. At 0.1× friction the plate slides past the target area. At 1.6× it moves a few centimeters and stalls short of it. <a href="#xp" data-goto="xp:plate:friction:friction|0.105263">Show</a></p>
+    </div>
+    <div class="sum-row">
+      <p class="sum-k">Close a door<span>hinge damping, 30×</span></p>
+      <p class="sum-v trio"><span><b><span data-fact="door_d30_300_pi05">24</span>%</b><i>within 300 steps</i></span><span><b><span data-fact="door_d30_pi05">96</span>%</b><i>within 600 steps</i></span></p>
+      <p class="sum-p"><b>Still done, but late.</b> π0.5 at 30× door damping, on the full task: put the mug in the microwave, then close the door. <span data-fact="door_d30_300_pi05_kn">12/50</span> trials finish within 300 steps and <span data-fact="door_d30_pi05_kn">48/50</span> of the same trials within 600. One set of runs, two step limits. <a href="#xp" data-goto="xp:door:damping:damping|30">Show</a></p>
+    </div>
+  </div>
+</section>
+
+<!-- TWO PARAMETERS -->
+<section class="sec band" id="interactions">
+  <div class="wrap-copy story-head">
+    <p class="eyebrow rv">Two parameters at once</p>
+    <h2 class="hx md rv">When two parameters change together</h2>
+    <p class="lede rv">With SmolVLA replanning every 10 steps, <span data-fact="bowl_stock_smolvla_kn">44/50</span> trials succeeded by step 300 under default physics, <span data-fact="bowl_m32_smolvla_kn">44/50</span> with a 32× heavier bowl, and <span data-fact="bowl_mu03_smolvla_kn">49/50</span> with 0.3× surface friction. <b>With both changes, <span data-fact="bowl_both_smolvla_kn">1/50</span> succeeded.</b> π0.5 and Fast-WAM succeeded in <span data-fact="bowl_both_pi05_kn">4/50</span> and <span data-fact="bowl_both_fastwam_kn">4/50</span> trials under the combined condition.</p>
+  </div>
+  <div class="wrap-mid">
+    <figure class="four rv" aria-label="SmolVLA on the bowl task: successes out of 50 trials for the four combinations of default or 32 times mass and default or 0.3 times surface friction">
+      <div class="four-grid">
+        <span class="fh"></span><span class="fh">Default surface friction</span><span class="fh">0.3× surface friction <small>μ = 0.285</small></span>
+        <span class="fr">Default mass <small>5.6 g</small></span><b><span data-fact="bowl_stock_smolvla_kn">44/50</span></b><b><span data-fact="bowl_mu03_smolvla_kn">49/50</span></b>
+        <span class="fr">32× mass <small>180 g</small></span><b><span data-fact="bowl_m32_smolvla_kn">44/50</span></b><b class="hot"><span data-fact="bowl_both_smolvla_kn">1/50</span></b>
+      </div>
+      <figcaption class="cap">SmolVLA, replanning every 10 steps, success by step 300, the same 50 initial states in every cell. A plausibility check, not a prediction of these rates: at the measured pinch force the grip can support about 1.4 N at μ = 0.285, and the 32× bowl weighs about 1.8 N, consistent with the slip seen in the video.<sup class="fn"><a href="#fn4" aria-label="Footnote 4">4</a></sup></figcaption>
+    </figure>
+  </div>
+  <div class="wrap xp rv" id="gx">
+    <p class="xp-how">Choose an object and a checkpoint, then select a cell. Rows change the mass; columns change the second parameter.</p>
+    <div class="xp-tasks scrollx"><div class="seg lg" id="gxTasks" role="group" aria-label="Object"></div></div>
+    <div class="xp-body">
+      <figure class="xp-chart">
+        <div class="xp-head">
+          <div><p class="sc-h" id="gxTitle">Success for each pair of levels</p><div class="sc-sub" id="gxSub"></div></div>
+          <div class="segs" id="gxCtl"></div>
+        </div>
+        <p class="xp-flag" id="gxFlag" role="status" hidden></p>
+        <div class="hm-wrap" id="gxWrap" tabindex="-1"><div class="hm" id="gxGrid" role="group" aria-label="Success rate for each pair of levels"></div></div>
+        <p class="hm-hint" id="gxHint" hidden>Swipe sideways for more columns →</p>
+        <p class="hm-axis" id="gxAxis"></p>
+        <div class="hm-key" aria-hidden="true"><span>100%</span><span class="ramp" id="gxRamp"></span><span>0% success</span></div>
+        <div class="hm-read" id="gxRead" aria-live="polite"></div>
+        <figcaption class="cap">Every cell is 50 trials on the same initial states, replanning every 10 steps. A dot marks cells with a recorded SmolVLA rollout; hatched cells were not run for this checkpoint.</figcaption>
+      </figure>
+      <div class="cplayer" id="gxClip"></div>
+    </div>
+  </div>
+  <div class="wrap-mid sum rv">
+    <div class="sum-row">
+      <p class="sum-k">Carry a mug<span>mass × center of mass</span></p>
+      <p class="sum-v trio"><span><b><span data-fact="mug_stock_smolvla">80</span>%</b><i>default</i></span><span><b><span data-fact="mug_m8_smolvla">60</span>%</b><i>8× mass</i></span><span><b><span data-fact="mug_m8_c03_smolvla">24</span>%</b><i>8×, CoM +0.30</i></span></p>
+      <p class="sum-p"><b>Mass first, then where it sits.</b> SmolVLA within 600 steps, 50 trials per cell. +0.30 moves the center of mass 2.1 cm toward the handle, 15% of the mug’s full extent along that axis. All four checkpoints lose success at 8× mass. <a href="#gx" data-goto="gx:mug:8|0.3">Show</a></p>
+    </div>
+    <div class="sum-row">
+      <p class="sum-k">Carry a bottle<span>mass × center of mass</span></p>
+      <p class="sum-v trio"><span><b><span data-fact="bottle_stock_smolvla">74</span>%</b><i>default</i></span><span><b><span data-fact="bottle_m8_smolvla">76</span>%</b><i>8× mass</i></span><span><b><span data-fact="bottle_c03_smolvla">44</span>%</b><i>CoM +0.30</i></span></p>
+      <p class="sum-p"><b>Top-heavy is what hurts.</b> SmolVLA within 600 steps. 8× mass alone changes little. Raising the center of mass from 35% to 50% of the bottle’s height (+0.30) lowers success for all four checkpoints. Lowering it does not, for SmolVLA and π0.5, which ran the full grid. <a href="#gx" data-goto="gx:bottle:1|0.3">Show</a></p>
+    </div>
+    <div class="sum-row">
+      <p class="sum-k">Carry a moka pot<span>mass × center of mass</span></p>
+      <p class="sum-v trio"><span><b><span data-fact="moka_stock_smolvla">94</span>%</b><i>default</i></span><span><b><span data-fact="moka_m8_smolvla">94</span>%</b><i>8× mass</i></span><span><b><span data-fact="moka_m32_smolvla">50</span>%</b><i>32× mass</i></span></p>
+      <p class="sum-p"><b>Three checkpoints hold at 8×, one does not.</b> SmolVLA, π0.5 and Fast-WAM keep <span data-fact="moka_m8_smolvla">94</span>, <span data-fact="moka_m8_pi05">92</span> and <span data-fact="moka_m8_fastwam">94</span>% at 8× mass. SmolVLA-Plus has already fallen from <span data-fact="moka_stock_smolvla_plus">100</span>% to <span data-fact="moka_m8_smolvla_plus">44</span>%. <a href="#gx" data-goto="gx:moka:32|0">Show</a></p>
+    </div>
+  </div>
+</section>
+
+<!-- EXECUTION SETTINGS -->
+<section class="sec" id="exec">
+  <div class="wrap-copy story-head">
+    <p class="eyebrow rv">Execution settings</p>
+    <h2 class="hx rv">One setting. <br>Opposite effects.</h2>
+    <p class="lede rv">A policy predicts a sequence of actions, executes the first 5 or 10 control steps, then reads a new observation and predicts again. At 20 Hz that is 0.25 s or 0.50 s of simulated time between two replans.</p>
+    <p class="lede rv"><b>For SmolVLA, replanning every 5 steps instead of 10 raised success on the slippery plate from <span data-fact="n5_plate_01_smolvla_n10">60</span>% to <span data-fact="n5_plate_01_smolvla_n5">94</span>%. On the drawer at 40 N of dry friction, success fell from <span data-fact="n5_drawer_f40_smolvla_n10">60</span>% to <span data-fact="n5_drawer_f40_smolvla_n5">4</span>%.</b> Both comparisons use <span data-fact="n5_plate_01_smolvla_pairs">50</span> matched starts and count success by step 300.</p>
+  </div>
+  <div class="wrap-mid">
+    <div class="card band rv" id="ex">
+      <h3 class="card-h">One initial state. Two replanning intervals.</h3>
+      <div class="seg" role="group" aria-label="Task" id="exSeg">
+        <button type="button" data-k="plate" aria-pressed="true">Slippery plate</button>
+        <button type="button" data-k="drawer" aria-pressed="false">Sticky drawer</button>
+      </div>
+      <div class="pair" id="exPair" data-pair data-max="12">
+        <figure><div class="vbox"><video muted playsinline preload="none" disablepictureinpicture></video></div><figcaption><b>Every 10 steps</b><span class="badge"></span></figcaption></figure>
+        <figure><div class="vbox"><video muted playsinline preload="none" disablepictureinpicture></video></div><figcaption><b>Every 5 steps</b><span class="badge"></span></figcaption></figure>
+      </div>
+      <div class="fbar">
+        <p class="fcap" id="exCap" aria-live="polite"></p>
+        <button class="rbtn" id="exPlay" type="button" aria-label="Pause the videos"><svg viewBox="0 0 18 18" aria-hidden="true"><path d="M4 2.5h3.4v13H4zM10.6 2.5H14v13h-3.4z" fill="currentColor"/></svg></button>
+      </div>
+    </div>
+    <figure class="tile band rv" style="margin-inline:0">
+      <p class="tile-h">Change in success when replanning every 5 steps instead of 10</p>
+      <p class="tile-sub">Percentage points. Each bar compares two runs with the same step limit on the same initial states. Rows marked * count success within 600 steps, the others within 300.</p>
+      <div class="cx" id="dxChart" role="img" aria-label="Horizontal bar chart of the change in success rate when replanning every 5 steps instead of every 10, for nineteen conditions and three checkpoints. The largest gains are on the plate with 0.1 times friction; the largest losses are on the drawer with dry friction. The table below the chart lists every number."></div>
+      <ul class="dkey" id="dxKey"></ul>
+      <details class="dtable" id="dxTable"><summary>Show the numbers behind this chart</summary><div class="tscroll2"></div></details>
+      <figcaption class="fnote">On the drawer at 40 N, the 5-step setting has the lower point estimate for all three checkpoints that were compared at both intervals (<span data-fact="n5_drawer_f40_smolvla" data-fmt="signed">−56</span>, <span data-fact="n5_drawer_f40_pi05" data-fmt="signed">−14</span> and <span data-fact="n5_drawer_f40_fastwam" data-fmt="signed">−28</span> points). Of SmolVLA’s <span data-fact="n5_drawer_f40_smolvla_fail">48</span> failed trials there, 43 were classified as blocked: the gripper kept touching the handle and the drawer made no progress.<sup class="fn"><a href="#fn8" aria-label="Footnote 8">8</a></sup> Why more frequent replanning stalls the drawer is not verified. Neither interval rescues the slipping bowl (<span data-fact="n5_bowl_both_min">2</span>–<span data-fact="n5_bowl_both_max">16</span>%). π0.5 comparisons carry run-to-run variation,<sup class="fn"><a href="#fn6" aria-label="Footnote 6">6</a></sup> and this chart can take a different run than the single-parameter chart for the same condition.<sup class="fn"><a href="#fn7" aria-label="Footnote 7">7</a></sup></figcaption>
+    </figure>
+  </div>
+</section>
+
+<!-- TWO SMOLVLA CHECKPOINTS -->
+<section class="sec band clip-x" id="robust">
+  <div class="wrap-copy story-head">
+    <p class="eyebrow rv">Two SmolVLA checkpoints</p>
+    <h2 class="hx md rv">SmolVLA checkpoints respond differently to physical changes</h2>
+    <p class="lede rv">We compare two published SmolVLA checkpoints: <a href="https://huggingface.co/lerobot/smolvla_libero">one trained on LIBERO data</a> and <a href="https://huggingface.co/lerobot/smolvla_libero_plus">one trained on LIBERO-Plus data</a> (SmolVLA-Plus), which adds varied cameras, lighting, layouts, language and robot initial states. <b>Neither is uniformly more robust to physics.</b> Which part of the LIBERO-Plus data causes a difference cannot be read from this comparison; that needs a controlled training comparison.</p>
+  </div>
+  <div class="track mtrack" id="rTrack">
+    <article class="wtile">
+      <h3 class="k">Plate, 0.1× friction</h3>
+      <dl class="ab">
+        <div><dt><i class="sw"></i>SmolVLA</dt><dd><span data-fact="plate_stock_smolvla">92</span>% → <span data-fact="plate_01_smolvla">60</span>%<small><span data-fact="drop_plate_01_smolvla" data-fmt="signed">−32</span> pp</small></dd></div>
+        <div><dt><i class="sw dash"></i>SmolVLA-Plus</dt><dd><span data-fact="plate_stock_smolvla_plus">100</span>% → <span data-fact="plate_01_smolvla_plus">90</span>%<small><span data-fact="drop_plate_01_smolvla_plus" data-fmt="signed">−10</span> pp</small></dd></div>
+      </dl>
+      <p>Default → 0.1× friction. SmolVLA-Plus loses less on the plate that slides too far.</p>
+      <div class="cx" data-mini="plate:friction" role="img" aria-label="Line chart of success against plate friction for the two SmolVLA checkpoints. SmolVLA-Plus is higher at low friction."></div>
+    </article>
+    <article class="wtile">
+      <h3 class="k">Drawer, 30× damping</h3>
+      <dl class="ab">
+        <div><dt><i class="sw"></i>SmolVLA</dt><dd><span data-fact="drawer_stock_smolvla">98</span>% → <span data-fact="drawer_d30_smolvla">54</span>%<small><span data-fact="drop_drawer_d30_smolvla" data-fmt="signed">−44</span> pp</small></dd></div>
+        <div><dt><i class="sw dash"></i>SmolVLA-Plus</dt><dd><span data-fact="drawer_stock_smolvla_plus">100</span>% → <span data-fact="drawer_d30_smolvla_plus">26</span>%<small><span data-fact="drop_drawer_d30_smolvla_plus" data-fmt="signed">−74</span> pp</small></dd></div>
+      </dl>
+      <p>Default → 30× damping. SmolVLA-Plus loses more on the drawer that resists the pull.</p>
+      <div class="cx" data-mini="drawer:damping" role="img" aria-label="Line chart of success against drawer damping for the two SmolVLA checkpoints. SmolVLA-Plus is lower at 30 times damping."></div>
+    </article>
+    <article class="wtile">
+      <h3 class="k">Drawer, 40 N dry friction</h3>
+      <dl class="ab">
+        <div><dt><i class="sw"></i>SmolVLA</dt><dd><span data-fact="drawer_stock_smolvla">98</span>% → <span data-fact="drawer_f40_smolvla">60</span>%<small><span data-fact="drop_drawer_f40_smolvla" data-fmt="signed">−38</span> pp</small></dd></div>
+        <div><dt><i class="sw dash"></i>SmolVLA-Plus</dt><dd><span data-fact="drawer_stock_smolvla_plus">100</span>% → <span data-fact="drawer_f40_smolvla_plus">22</span>%<small><span data-fact="drop_drawer_f40_smolvla_plus" data-fmt="signed">−78</span> pp</small></dd></div>
+      </dl>
+      <p>Default → 40 N. At 30 N (<span data-fact="drawer_f30_share">55</span>% of the reference): SmolVLA <span data-fact="drawer_f30_smolvla_kn">10/10</span>, SmolVLA-Plus <span data-fact="drawer_f30_smolvla_plus_kn">44/50</span>, with different numbers of trials.</p>
+      <div class="cx" data-mini="drawer:frictionloss" role="img" aria-label="Line chart of success against drawer dry friction for the two SmolVLA checkpoints. SmolVLA-Plus is lower at 40 newtons."></div>
+    </article>
+  </div>
+  <div class="wrap arrows" data-for="rTrack">
+    <button class="arrow" type="button" data-dir="-1" aria-label="Previous"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M10 3L5 8l5 5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+    <button class="arrow" type="button" data-dir="1" aria-label="Next"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M6 3l5 5-5 5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+  </div>
+  <div class="wrap"><p class="fnote rv">All three panels: replanning every 10 steps, success within 300 steps, differences in percentage points. Filled markers are 50 trials, hollow markers fewer. The small charts show only the levels both checkpoints ran.</p></div>
+</section>
+
+<!-- DESIGN -->
+<section class="sec" id="design">
+  <div class="wrap-copy story-head">
+    <p class="eyebrow rv">Benchmark design</p>
+    <h2 class="hx rv">Change one thing. <br>Pair everything else.</h2>
+    <p class="lede rv">A drop in success can be attributed to a physical property only if nothing else moved. <b>LIBERO-Phys keeps the scene, the initial state, the checkpoint and its noise seed fixed.</b></p>
+  </div>
+  <div class="wrap">
+    <ol class="steps rv">
+      <li><h3>Perturb at runtime</h3><p>Parameters are written into the compiled MuJoCo model after every reset. No LIBERO asset or source file changes; with the default values written back, the simulation steps exactly as unmodified LIBERO does. Mass and inertia are scaled together, so an object keeps its shape and mass distribution.</p></li>
+      <li><h3>Pair every trial</h3><p>Each condition uses up to 50 of LIBERO’s predefined initial states with the same noise seed per state. A Wilson 95% interval says how uncertain one success rate is. McNemar’s test, on the trials two conditions share, says whether two rates differ.</p></li>
+      <li><h3>Measure what the arm can do</h3><p>For the drawer, the arm’s near-static pull at full action was measured at about 55 N. It serves as a reference, not as a filter: the grid goes to 60 N, and every success rate counts all trials that were run. Feasibility is tested separately and reported next to the rates.</p></li>
+      <li><h3>Report the execution setting</h3><p>Replanning interval and step limit are part of every result. Most runs go to 600 steps and give the 300-step result from the same trials. Some earlier runs stopped at step 300; the charts say so where no 600-step result exists.</p></li>
+    </ol>
+    <div class="tscroll rv">
+      <table class="ft">
+        <caption>What is perturbed, by object</caption>
+        <thead><tr><th scope="col">Object</th><th scope="col">LIBERO task</th><th scope="col">Parameter</th><th scope="col">Unit</th><th scope="col">Levels run so far</th></tr></thead>
+        <tbody id="ftBody"><tr><td colspan="5" class="dim">The list of levels is filled in from the results data; it needs JavaScript.</td></tr></tbody>
+        <tfoot><tr><th scope="row">Table</th><td class="dim">planned</td><td class="dim">Tilt, height</td><td class="dim">degrees, cm</td><td class="dim">not run yet; will be reported separately, because they change what the policy sees and reaches</td></tr></tfoot>
+      </table>
+      <p class="fnote">Not every checkpoint ran every level: Fast-WAM and SmolVLA-Plus ran the default and two or three key levels per parameter. LIBERO’s objects are light. The bowl weighs 5.6 g and the plate 11.5 g; ceramic pieces of the same size would weigh roughly 200 to 300 g (our estimate from the asset dimensions, not a measurement). That is why the mass grid reaches 32×, which brings the bowl to 180 g. Camera pose and object scale are excluded: they change what the policy sees.</p>
+    </div>
+  </div>
+</section>
+
+<!-- RELATED BENCHMARKS -->
+<section class="sec band" id="compare">
+  <div class="wrap-mid">
+    <h2 class="h2 rv">Related benchmarks.</h2>
+    <div class="ctable rv">
+      <div class="ccols"><div><h3><a href="https://arxiv.org/abs/2609.26292">RoboTwin-Phys</a></h3><p>multi-factor randomization</p></div><div><h3>LIBERO-Phys</h3><p>one parameter at a time</p></div></div>
+      <div class="crow"><h4>What changes in one episode</h4><div class="ccols"><div><b>13</b>attributes, each sampled independently</div><div><b>1</b>parameter; selected pairs on a grid</div></div></div>
+      <div class="crow"><h4>Attributes</h4><div class="ccols"><div>Object, contact, damping, table and external-force attributes, with camera distance and angle and object scale among the 13</div><div>Object dynamics and articulated joints; cameras and object scale stay fixed</div></div></div>
+      <div class="crow"><h4>Ranges and feasibility</h4><div class="ccols"><div>Global ranges, with calibrated ranges for nine tasks; episodes an expert planner cannot solve are excluded</div><div>A fixed grid per parameter; rates count every trial, and feasibility tests are reported separately</div></div></div>
+      <div class="crow"><h4>What is reported</h4><div class="ccols"><div>Overall success per model and per-task success for all 50 tasks</div><div>A success curve per parameter and task, and selected two-parameter grids</div></div></div>
+      <div class="crow"><h4>Execution setting</h4><div class="ccols"><div>Not varied</div><div>Replanning interval and step limit</div></div></div>
+      <div class="crow"><h4>Scale</h4><div class="ccols"><div><b>50</b>bimanual tasks on RoboTwin 2.0, 5 models, 100 episodes per task</div><div><b><span data-fact="n_libero_tasks">7</span></b>single-arm LIBERO tasks in <span data-fact="n_panels">8</span> panels, <span data-fact="n_policies">4</span> checkpoints, up to 50 trials per condition</div></div></div>
+    </div>
+    <p class="fnote rv">The two benchmarks answer different questions. RoboTwin-Phys measures how far success falls across a large task set when many physical attributes shift at once. LIBERO-Phys measures how success changes along one parameter on a few tasks. <a href="https://arxiv.org/abs/2510.13626">LIBERO-Plus</a> perturbs object layout, camera viewpoint, robot initial state, language instruction, lighting, background and sensor noise. <a href="https://arxiv.org/abs/2610.24579">LIBERO-Dynamic</a> moves the target object at controlled speeds, adds inference latency, and compares execution protocols and action horizons. Neither changes mass, friction or joint resistance.</p>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="sec" id="faq">
+  <div class="wrap">
+    <h2 class="h2 rv">Questions? Answers.</h2>
+    <div class="faq-top"><button class="faq-all" id="faqAll" type="button" aria-expanded="false">Expand all <svg viewBox="0 0 10 10" aria-hidden="true"><path d="M1.5 3.5L5 7l3.5-3.5" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg></button></div>
+    <div class="faq" id="faqList">
+      <details><summary>Why change one parameter at a time?<svg viewBox="0 0 20 20" aria-hidden="true"><path d="M3 7l7 7 7-7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></summary>
+        <div class="ans"><p><b>Because the answer depends on the parameter and the task.</b> SmolVLA keeps <span data-fact="knob_d100_smolvla">90</span>% success at 100× damping on a knob, falls to <span data-fact="drawer_d30_smolvla">54</span>% at 30× damping on a drawer, and fails every trial at 1.6× friction on a plate. One score over jointly sampled parameters cannot show which property a policy fails on.</p><p>Parameters that the mechanics couple, such as mass and grasp friction, are also run together on a small grid.</p></div></details>
+      <details><summary>Is a perturbed task still solvable?<svg viewBox="0 0 20 20" aria-hidden="true"><path d="M3 7l7 7 7-7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></summary>
+        <div class="ans"><p><b>That is tested, not assumed, and nothing is filtered.</b> Every success rate on this page counts all trials that were run, including levels that may be out of the arm’s reach.</p><p>For the drawer, the arm’s near-static pull at full action was measured at about 55 N for this drawer and arm pose, and it falls with speed.<sup class="fn"><a href="#fn3" aria-label="Footnote 3">3</a></sup> We use it as a reference; the grid goes up to 60 N (<span data-fact="drawer_f60_share">109</span>%). At 50 N, a scripted full-scale pull that takes over from a policy’s own grasp opened the drawer from 7 of the 10 initial states that the policy runs also cover. SmolVLA and π0.5 opened it from none of those 10. For those states the failure is the policy’s. At 60 N the scripted pull opened 2 of 10 within 300 steps, so most failures there are not.</p><p>For the microwave door, a scripted full-scale push closed the door from 11 of 20 initial states at 12 N·m of dry friction, where SmolVLA finished the task in <span data-fact="door_f12_smolvla_kn">0/50</span> trials and π0.5 in <span data-fact="door_f12_pi05_kn">2/50</span>.<sup class="fn"><a href="#fn9" aria-label="Footnote 9">9</a></sup></p></div></details>
+      <details><summary>Why can two charts show different rates for the same condition?<svg viewBox="0 0 20 20" aria-hidden="true"><path d="M3 7l7 7 7-7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></summary>
+        <div class="ans"><p><b>Because some conditions were run more than once, and the two charts need different runs.</b> The single-parameter chart takes, for each point, the run with the most trials, and of those the longer one. The replanning chart needs two runs with the same step limit, one per interval.</p><p>Example: π0.5 on the drawer at 40 N, replanning every 10 steps, success within 300 steps. The 600-step run gave <span data-fact="pi05_f40_curve_kn">14/50</span> (single-parameter chart); the 300-step run gave <span data-fact="pi05_f40_pair_kn">12/50</span> (replanning chart). π0.5 is not reproducible trial for trial across processes, so two runs of one condition differ by a few trials. Both charts say which run each number comes from: the readout under the single-parameter chart, and the table under the replanning chart.</p></div></details>
+      <details><summary>Why does the mass grid go up to 32×?<svg viewBox="0 0 20 20" aria-hidden="true"><path d="M3 7l7 7 7-7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></summary>
+        <div class="ans"><p><b>LIBERO’s objects are far lighter than real ones.</b> The bowl weighs 5.6 g and the plate 11.5 g. Ceramic pieces of the same size would weigh roughly 200 to 300 g; that figure is our estimate from the asset dimensions, not a measurement. At 32× the bowl weighs 180 g. In our runs, slipping and stalling only begin well above the default mass, so a grid that stopped at 2× would test nothing.</p></div></details>
+      <details><summary>Are the comparisons paired?<svg viewBox="0 0 20 20" aria-hidden="true"><path d="M3 7l7 7 7-7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></summary>
+        <div class="ans"><p>Yes. <b>Every condition draws on the same list of initial states, and each state has its own noise seed</b>, so state 17 under 30× damping differs from state 17 under default physics only in the damping.</p><p>Not every level has all 50 states: fine sweeps used the first 20 and coarse sweeps the first 10. The charts show the count for every point. Where the text compares two levels with different counts, it uses the states both levels have and says so.</p></div></details>
+      <details><summary>How reproducible is a trial?<svg viewBox="0 0 20 20" aria-hidden="true"><path d="M3 7l7 7 7-7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></summary>
+        <div class="ans"><p>Three different things are worth keeping apart.</p><p><b>Same start and seed.</b> A trial is defined by an initial-state ID and a noise seed. All conditions share them. This always holds.</p><p><b>Step-for-step reproduction.</b> Running a trial again gives exactly the same trajectory. Of the <span data-fact="n_clips">167</span> videos on this page, <span data-fact="n_clips_exact">118</span> are identical, step for step, to the trial in the benchmark’s results.</p><p><b>Outcome match.</b> The other <span data-fact="n_clips_rerun">49</span> videos are re-recordings that end the way the original trial did (same success or failure, and for a success a step count within 10%) but differ along the way. Almost all come from the bottle and microwave scenes. There, the simulator’s wrist-camera image of one and the same state can differ between two renders by one intensity level in a few pixels; that changes the policy’s next actions, and after first contact the trial goes its own way. These videos say so under the player.</p><p>In the first round of re-runs (157 trials, 23 November 2026), 117 were identical step for step and 38 of the other 40 ended with the original outcome on the first attempt; the other 2 were repeated until it matched. In the second round (12 door trials, 24 November 2026), 2 were identical, 9 matched in outcome, and 1 did not match in 8 attempts and has no video. The success rates in the charts always come from the original runs, never from re-recordings.</p><p>π0.5 is not reproducible trial for trial across processes: two independent runs of the microwave task under default physics agreed on success or failure in 48 of 50 initial states.</p></div></details>
+      <details><summary>Which policies and checkpoints?<svg viewBox="0 0 20 20" aria-hidden="true"><path d="M3 7l7 7 7-7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></summary>
+        <div class="ans"><p>Four published checkpoints from the Hugging Face hub, all run in the same simulator version and checked under default physics before any perturbation:</p><ul class="ckpt"><li><b>SmolVLA</b> <code>lerobot/smolvla_libero</code></li><li><b>π0.5</b> <code>lerobot/pi05_libero_finetuned_v044</code></li><li><b>Fast-WAM</b>, a world-action model, run in bfloat16 <code>lerobot/fastwam_libero_uncond_2cam224</code></li><li><b>SmolVLA-Plus</b>, SmolVLA trained on LIBERO-Plus data <code>lerobot/smolvla_libero_plus</code></li></ul></div></details>
+      <details><summary>Does the benchmark modify LIBERO?<svg viewBox="0 0 20 20" aria-hidden="true"><path d="M3 7l7 7 7-7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></summary>
+        <div class="ans"><p>No asset or source file is edited. <b>Parameters are written into the live MuJoCo model after each reset.</b></p><p>One fix is applied at reset time, also without touching LIBERO’s source. In tasks whose initial condition opens or switches on a fixture, such as the microwave task, LIBERO draws a growing number of random values on every reset, which moves the fixture by up to a centimeter from one reset to the next. The benchmark clears that list so that every reset places the fixtures identically.</p></div></details>
+      <details><summary>What is not in the benchmark yet?<svg viewBox="0 0 20 20" aria-hidden="true"><path d="M3 7l7 7 7-7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></summary>
+        <div class="ans"><p>The table geometry group (tilt and height); a multi-factor split over all 40 LIBERO tasks, which will give one aggregate number comparable with other benchmarks; full grids for Fast-WAM and SmolVLA-Plus; and a fixed reference torque for the knob and the door, which is why their dry friction is shown in N·m. Robot-side parameters, cameras and object scale are out of scope.</p></div></details>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTNOTES -->
+<section class="band notes" aria-label="Footnotes">
+  <div class="wrap">
+    <ol>
+      <li id="fn1">Success within 300 steps is the share of trials that reach the task’s goal in at most 300 control steps (15 s at 20 Hz); within 600 steps, 30 s. A trial ends at its first success. Runs made to 600 steps give both numbers from the same trials. Runs that stopped at step 300 have no 600-step result, unless every trial had already succeeded. Intervals are Wilson 95%.</li>
+      <li id="fn2">Plate friction is set to μ = 0.1, 0.3, 0.6, 0.95 (default) and 1.5, shown as rounded multiples of the default. MuJoCo takes the larger friction coefficient of two touching bodies, so the table’s coefficient is lowered until the plate’s own value governs the plate–table contact; this leaves the default rollouts unchanged. Dry friction in the drawer slide and the door hinge uses a nearly rigid friction constraint, so that the joint does not creep below the threshold. Drawer levels are also given as a share of the 55 N pull reference. Knob and door dry friction are in N·m; their reference torque is not fixed yet.</li>
+      <li id="fn3">At full action the arm’s operational-space controller pulls the drawer with F(v) ≈ 55 N − 213 v (v in m/s), measured for this drawer and one arm pose, with no joint torque saturating; 55 N is the near-static value. Contact logs give the gripper’s force along the slide axis: SmolVLA and π0.5 sustain about 42 N while the drawer moves, at every friction level logged.</li>
+      <li id="fn4">At 32× the bowl weighs mg ≈ 1.8 N. With the bowl’s surface coefficient at μ = 0.285, two fingers hold at most 2μF ≈ 1.4 N at the measured pinch force of about 2.5 N. The 0.3× and 0.6× columns give the bowl’s surface coefficient priority in every contact, the finger pads included; in the default column the finger contact uses the pads’ own coefficient of 2.0. The 2.1× column (μ = 2.0 with priority) is a control for that switch: SmolVLA <span data-fact="bowl_stock_smolvla">88</span>% at default against 84% in the control.</li>
+      <li id="fn5">Videos are SmolVLA trials of the benchmark, run again from the same initial state and seed and compared with the benchmark’s record. Most are identical to it step for step; where the simulator’s rendering is not bit-reproducible, the video is a re-recording with the original outcome and says so. Videos are drawn from the saved simulator states at 2× real time. Viewpoint and resolution are for the reader; the policy sees LIBERO’s own camera images. The blue target marks in the plate and bowl videos are drawn into the video only.</li>
+      <li id="fn6">π0.5 is not reproducible trial for trial across processes: two independent runs of the microwave task under default physics agree on success or failure in 48 of 50 initial states.</li>
+      <li id="fn7">The single-parameter chart takes the run with the most trials, then the longer one. The replanning chart takes two runs with the same step limit. For π0.5 on the drawer at 40 N these are different runs of one condition: <span data-fact="pi05_f40_curve_kn">14/50</span> and <span data-fact="pi05_f40_pair_kn">12/50</span> within 300 steps.</li>
+      <li id="fn8">Failure classes for the drawer come from contact logs. Blocked: the gripper touches the handle (more than 1 N) in at least 30% of the last 100 steps and the drawer moves less than 2 mm in them. Slipped: contact in fewer than 30% of those steps, no progress. Slow: still moving at the end. The log cannot tell a finger slipping off the handle from the policy letting go.</li>
+      <li id="fn9">Door dry friction: median hinge torque applied by SmolVLA while in contact rises from 1.0 N·m at default to 9.5 N·m at 12 N·m of friction (π0.5: 1.3 to 8.3 N·m). At 8 N·m the door has covered a median 83 to 97% of its travel in failed trials. For scale, a scripted full-scale push from the policy’s own contact point holds 20 to 24 N·m against a locked door. The scripted push only tests whether the door closes, not whether the mug is inside.</li>
+    </ol>
+  </div>
+</section>
+
+<!-- PAPER -->
+<section class="sec paper" id="cite">
+  <div class="wrap">
+    <p class="eyebrow rv">Paper</p>
+    <h2 class="title rv">LIBERO‑Phys: Factor‑Isolated Physical Perturbations for Vision‑Language‑Action Policies</h2>
+    <!-- Fill in when decided:
+    <p class="authors rv"><span>First Author</span><span>Second Author</span></p>
+    <p class="affil rv">Affiliation</p>
+    <div class="btns rv"><a class="btn solid" href="">Paper</a><a class="btn" href="">Code</a><a class="btn" href="">Data</a></div>
+    -->
+    <p class="affil rv">Preview. Authors, paper, code, data and citation will be linked here at release.</p>
+    <!-- BibTeX block: uncomment and fill in once the paper has a venue.
+    <div class="bib rv">
+      <div class="bib-head"><span>BibTeX</span><button class="copybtn" id="bibCopy" type="button">Copy</button></div>
+<pre id="bibText">@inproceedings{liberophys,
+  title     = {{LIBERO-Phys}: Factor-Isolated Physical Perturbations
+               for Vision-Language-Action Policies},
+  author    = {},
+  booktitle = {},
+  year      = {}
+}</pre>
+    </div>
+    -->
+  </div>
+</section>
+
+</main>
+<footer class="foot"><div class="wrap">Videos: SmolVLA trials of the benchmark, played at 2× real time.<sup class="fn"><a href="#fn5" aria-label="Footnote 5">5</a></sup> Results snapshot: all runs finished by <span data-resdate>2026-11-23</span>. Page data generated <span id="genDate"></span>.</div></footer>
+
+</body>
+</html>
